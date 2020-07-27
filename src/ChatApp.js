@@ -1,6 +1,7 @@
 import React from 'react';
 import {Badge, Icon, Layout, Spin, Typography} from "antd";
 import { Client as ChatClient } from 'twilio-chat';
+import axios from 'axios';
 
 import './assets/Chat.css';
 import './assets/ChatChannelSection.css';
@@ -67,15 +68,21 @@ class ChatApp extends React.Component {
   };
 
   getToken = () => {
-    // Paste your unique Chat token function
-    const myToken = '<Your token here>';
-    this.setState({token: myToken}, this.initChat);
+    console.log('getting token');
+    axios.get('https://lrx5gkxvs5.execute-api.us-east-1.amazonaws.com/default/conversations-demo', {
+      params: { 'username': this.state.name }
+    })
+    .then((response) => {
+      console.log(response.data);
+      this.setState({token: response.data}, this.initChat);
+    });
   };
 
   initChat = async () => {
     window.chatClient = ChatClient;
-    this.chatClient = await ChatClient.create(this.state.token);
+    console.log('trying to connect: ' + this.state.name + ' to: ' + this.state.token);
     this.setState({statusString: 'Connecting to Twilio…'});
+    this.chatClient = await ChatClient.create(this.state.token);
 
     this.chatClient.on('connectionStateChanged', (state) => {
       if (state === 'connecting') this.setState({statusString: 'Connecting to Twilio…', status: "default"});
